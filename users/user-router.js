@@ -1,5 +1,5 @@
 const express = require("express")
-const db = require("../data/db-config.js")
+const db = require("../data/db-config")
 
 const router = express.Router()
 
@@ -45,7 +45,9 @@ router.put("/:id", async (req, res, next) => {
     if (updatedCount) {
       res.json(await db("users").where({ id }).first())
     } else {
-      res.status(404).json({ message: "Could not find user with given id" })
+      res.status(404).json({
+        message: "Could not find user with given ID",
+      })
     }
   } catch(err) {
     next(err)
