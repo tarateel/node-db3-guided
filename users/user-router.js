@@ -1,11 +1,15 @@
 const express = require("express")
+const userModel = require("./user-model")
+const postRouter = require("../posts/post-router")
 const db = require("../data/db-config")
 
 const router = express.Router()
 
+router.use("/:id/posts", postRouter)
+
 router.get("/", async (req, res, next) => {
   try {
-    res.json(await db("users"))
+    res.json(await userModel.find())
   } catch(err) {
     next(err)
   }
@@ -14,7 +18,7 @@ router.get("/", async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
   try {
     const { id } = req.params
-    const user = await db("users").where({ id }).first()
+    const user = await userModel.findById(id)
 
     if (user) {
       res.json(user)
@@ -30,8 +34,8 @@ router.get("/:id", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const [id] = await db("users").insert(req.body)
-    res.status(201).json(await db("users").where({ id }).first())
+    const newUser = await userModel.add(req.body)
+    res.status(201).json(newUser)
   } catch(err) {
     next(err)
   }
@@ -40,10 +44,10 @@ router.post("/", async (req, res, next) => {
 router.put("/:id", async (req, res, next) => {
   try {
     const { id } = req.params
-    const updatedCount = await db("users").where({ id }).update(req.body)
+    const user = await userModel.update(id, req.body)
 
-    if (updatedCount) {
-      res.json(await db("users").where({ id }).first())
+    if (user) {
+      res.json(user)
     } else {
       res.status(404).json({
         message: "Could not find user with given ID",
@@ -57,7 +61,7 @@ router.put("/:id", async (req, res, next) => {
 router.delete("/:id", async (req, res, next) => {
   try {
     const { id } = req.params
-    const deletedCount = await db("users").where({ id }).del()
+    const deletedCount = await userModel.remove(id)
 
     if (deletedCount) {
       res.status(204).end()
